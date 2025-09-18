@@ -188,7 +188,6 @@ def collate_func(batch):
   max_len_batch=input_ids_padded.shape[1] # Corrected to use shape[1] for sequence length
   ###max_N_per_batch=max(ts_data[])
 
-
   labels_batch=[]
   attention_mask_batch=[]
 
@@ -365,7 +364,7 @@ for p in model_wrapper.ts_encoder.parameters():
 """for param in ts_encoder.parameters():
     param.requires_grad=True"""
 
-for epoch in range(2):
+for epoch in range(5):
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
     num_batches = 0
     running_loss=0
@@ -413,7 +412,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 plt.figure(figsize=(8, 5))
-plt.plot(range(0,1),epoch_losses, marker='o')
+plt.plot(range(0, 5), epoch_losses, marker='o')
 plt.title("Training Loss Trend Over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
