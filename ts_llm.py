@@ -31,7 +31,7 @@ model.resize_token_embeddings(len(tokenizer))
 
 ##dataset fetching
 import json
-_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "/ts_alignment/ift.jsonl")
+_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "ift.jsonl")
 
 ###_json_file='./ift.jsonl'
 def dataset_align(file):
