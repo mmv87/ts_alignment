@@ -38,7 +38,7 @@ def dataset_align(file):
     list_data=[]
     with open(file,'r',encoding='utf-8') as file:
         for idx,line in enumerate(file):
-            if idx<100:
+            if idx<100000:
                 obj= json.loads(line)
                 list_data.append(obj)
             else:
@@ -364,7 +364,7 @@ for p in model_wrapper.ts_encoder.parameters():
 """for param in ts_encoder.parameters():
     param.requires_grad=True"""
 
-for epoch in range(5):
+for epoch in range(10):
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
     num_batches = 0
     running_loss=0
@@ -402,7 +402,6 @@ for epoch in range(5):
     epoch_losses.append(epoch_loss)
 
 ### save the plot
-
 out_path = os.path.join(os.environ["SLURM_TMPDIR"], "training_loss.png")
 import matplotlib.pyplot as plt
 import matplotlib

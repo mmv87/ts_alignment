@@ -254,14 +254,11 @@ class PatchTSTEncoder(nn.Module):
             
         else:
             x=self.W_P(x) ## (bs,num_patch,d_model)
-            print(f'after linear trans : {x.shape}')
         
         x=x.transpose(1,2) ## (bs,d_model,num_patch)
         u=torch.reshape(x,(bs*n_vars,self.num_patch,self.d_model)) ## (bs*n_vars,num_patch,d_model)
         
-        print(f'u shape before PE: {u.shape}')
         u=self.dropout(u+self.W_pos) ## dropout with positional encoding
-        print(f'u after positional encoding: {u.shape}')
         
         ## if only one patch, no need to pass through the encoder but with ts_padding tokens this becomes redundant
         if self.num_patch==1:
