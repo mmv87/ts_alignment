@@ -38,7 +38,7 @@ def dataset_align(file):
     list_data=[]
     with open(file,'r',encoding='utf-8') as file:
         for idx,line in enumerate(file):
-            if idx<100000:
+            if idx<5000:
                 obj= json.loads(line)
                 list_data.append(obj)
             else:
