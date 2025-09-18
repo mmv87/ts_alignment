@@ -31,7 +31,7 @@ model.resize_token_embeddings(len(tokenizer))
 
 ##dataset fetching
 import json
-_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "ift.jsonl")
+_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "/ts_alignment/ift.jsonl")
 
 ###_json_file='./ift.jsonl'
 def dataset_align(file):
@@ -185,8 +185,9 @@ def collate_func(batch):
   ##input_ids_padded= pad_sequence(input_ids,batch_first=True,padding_value=tokenizer.pad_token_id,padding_side='left')
   input_ids_padded= torch.stack([torch.cat([torch.full(((max_len_batch-seq.size(0)),),tokenizer.pad_token_id,dtype=seq.dtype),seq]) for seq in input_ids])
 
-  max_len_batch=input_ids_padded.shape[1] # Corrected to use shape[1] for sequence length
+  ##max_len_batch=input_ids_padded.shape[1] # Corrected to use shape[1] for sequence length
   ###max_N_per_batch=max(ts_data[])
+
 
   labels_batch=[]
   attention_mask_batch=[]
@@ -264,7 +265,6 @@ class LLM_wrapper(nn.Module):
         self.max_patches=max_patches
         self.P=patch_len
         self.device=device
-
 
         ##initialise the ts_encoder
         self.ts_encoder=PatchTSTEncoder(c_in=1,n_vars=1,num_patch=self.max_patches,patch_len=self.P,n_layers=6,d_model=llm_model.config.hidden_size,n_heads=4,shared_embedding=True,d_ff=2*256,
@@ -373,12 +373,10 @@ for epoch in range(5):
         input_ids=batch['input_ids'].to(device) ## input and output
         ts_input=batch['time_series'] ### batch of patchified ts_inputs (bs,n,p)
         ##ts_input
-
         attention_mask_batch =batch['attention_mask'].to(device)  ## the causal attention mask for the input labels
         labels_batch=batch['labels'].to(device)  ## the output text , natural language description of the sample
 
         ##model_wrapper=LLM_wrapper(tokenizer,ts_input,model,device=device)
-
         outputs = model_wrapper(input_ids=input_ids,ts_input=ts_input,attention_mask=attention_mask_batch,labels=labels_batch)
         ##model_wrapper.train()
         ##all_params = (list(model_wrapper.ts_encoder.parameters()) +list(model_wrapper.llm_model.get_input_embeddings().parameters()))
@@ -406,7 +404,6 @@ for epoch in range(5):
 ### save the plot
 
 out_path = os.path.join(os.environ["SLURM_TMPDIR"], "training_loss.png")
-
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
