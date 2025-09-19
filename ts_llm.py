@@ -313,9 +313,9 @@ class LLM_wrapper(nn.Module):
             end_index = torch.where(ts_end_mask)[0]
             ##print(start_index,end_index)
 
-            assem_embed = torch.cat([input_embeds[i,:start_index.item()+1,:],ts_embeddings[i,:,:],input_embeds[i,end_index.item():,:]],dim=0)
-            assem_attention_mask = torch.cat([attention_mask[i,:start_index.item()+1],torch.ones((ts_embeddings.shape[1],),dtype=torch.long,device=self.device),attention_mask[i,end_index.item():]])
-            assem_labels = torch.cat([labels[i,:start_index.item()+1],torch.full((ts_embeddings.shape[1],),-100.0,dtype=torch.long,device=self.device),labels[i,end_index.item():]])
+            assem_embed = torch.cat([input_embeds[i,:start_index.item(),:],ts_embeddings[i,:,:],input_embeds[i,end_index.item():,:]],dim=0)
+            assem_attention_mask = torch.cat([attention_mask[i,:start_index.item()],torch.ones((ts_embeddings.shape[1],),dtype=torch.long,device=self.device),attention_mask[i,end_index.item():]])
+            assem_labels = torch.cat([labels[i,:start_index.item()],torch.full((ts_embeddings.shape[1],),-100.0,dtype=torch.long,device=self.device),labels[i,end_index.item():]])
 
             assemb_embed_list.append(assem_embed)
             attention_assem.append(assem_attention_mask.to(self.device))
