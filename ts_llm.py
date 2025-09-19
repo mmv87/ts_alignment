@@ -14,6 +14,7 @@ import torch.nn.functional as F
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from dataloader import ts_multimodal_text,collate_func
 
 ##_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "ift.json")
 
@@ -51,7 +52,7 @@ data= dataset_align(_json_file)
 ##prepare the datasample and batches
 device ='cuda' if torch.cuda.is_available() else 'cpu'
 
-## Dataset class to preprocess on sample , sam;ple of ts_input to patchify based on the window size and stride
+"""## Dataset class to preprocess on sample , sam;ple of ts_input to patchify based on the window size and stride
 class ts_multimodal_text(Dataset):
     def __init__(self,patch_len,stride,data,tokenizer,device=device,model_dtype=model_dtype):
         self.data = data
@@ -220,7 +221,7 @@ def collate_func(batch):
       'input_ids':input_ids_padded,
       "labels":torch.stack(labels_batch),
       'attention_mask':torch.stack(attention_mask_batch),
-      "time_series":torch.cat(padded_ts_data,dim=0)} ##list of tensor (bs,max_N,Patch_len)
+      "time_series":torch.cat(padded_ts_data,dim=0)} ##list of tensor (bs,max_N,Patch_len)"""
 
 ## to check the batch of samples returned
 dataset=ts_multimodal_text(256,256,data,tokenizer,device=device,model_dtype=model_dtype)
