@@ -17,7 +17,6 @@ import torch.nn.functional as F
 from dataloader import ts_multimodal_text,collate_func
 from torch.utils.data import Dataset,DataLoader
 
-
 ##_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "ift.json")
 
 model_name='microsoft/Phi-4-mini-reasoning'
@@ -411,7 +410,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 plt.figure(figsize=(8, 5))
-plt.plot(range(0, 5), epoch_losses, marker='o')
+plt.plot(range(0, 10), epoch_losses, marker='o')
 plt.title("Training Loss Trend Over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
