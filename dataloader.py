@@ -1,10 +1,12 @@
 
-##prepare the datasample and batches
-device ='cuda' if torch.cuda.is_available() else 'cpu'
-
 from torch.utils.data import Dataset,DataLoader
 from torch.nn.utils.rnn import pad_sequence
 import torch
+import torch.nn as nn
+from torch import Tensor
+import torch.nn.functional as F
+
+device ='cuda' if torch.cuda.is_available() else 'cpu'
 
 ## Dataset class to preprocess on sample , sam;ple of ts_input to patchify based on the window size and stride
 class ts_multimodal_text(Dataset):
