@@ -15,6 +15,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dataloader import ts_multimodal_text,collate_func
+from torch.utils.data import Dataset,DataLoader
+
 
 ##_json_file = os.path.join(os.environ["SLURM_TMPDIR"], "ift.json")
 
@@ -50,7 +52,7 @@ def dataset_align(file):
 data= dataset_align(_json_file)
 
 ##prepare the datasample and batches
-device ='cuda' if torch.cuda.is_available() else 'cpu'
+##device ='cuda' if torch.cuda.is_available() else 'cpu'
 
 """## Dataset class to preprocess on sample , sam;ple of ts_input to patchify based on the window size and stride
 class ts_multimodal_text(Dataset):
@@ -225,7 +227,7 @@ def collate_func(batch):
 
 ## to check the batch of samples returned
 dataset=ts_multimodal_text(256,256,data,tokenizer,device=device,model_dtype=model_dtype)
-dataloader=DataLoader(dataset,batch_size=1,collate_fn=collate_func)
+dataloader=DataLoader(dataset,batch_size=1,shuffle=True,collate_fn=lambda b:collate_func(b,tokenizer=tokenizer,device=device))
 
 """
 for batch in dataloader:
@@ -314,9 +316,9 @@ class LLM_wrapper(nn.Module):
             end_index = torch.where(ts_end_mask)[0]
             ##print(start_index,end_index)
 
-            assem_embed = torch.cat([input_embeds[i,:start_index.item(),:],ts_embeddings[i,:,:],input_embeds[i,end_index.item():,:]],dim=0)
-            assem_attention_mask = torch.cat([attention_mask[i,:start_index.item()],torch.ones((ts_embeddings.shape[1],),dtype=torch.long,device=self.device),attention_mask[i,end_index.item():]])
-            assem_labels = torch.cat([labels[i,:start_index.item()],torch.full((ts_embeddings.shape[1],),-100.0,dtype=torch.long,device=self.device),labels[i,end_index.item():]])
+            assem_embed = torch.cat([input_embeds[i,:start_index.item()+1,:],ts_embeddings[i,:,:],input_embeds[i,end_index.item():,:]],dim=0)
+            assem_attention_mask = torch.cat([attention_mask[i,:start_index.item()+1],torch.ones((ts_embeddings.shape[1],),dtype=torch.long,device=self.device),attention_mask[i,end_index.item():]])
+            assem_labels = torch.cat([labels[i,:start_index.item()+1],torch.full((ts_embeddings.shape[1],),-100.0,dtype=torch.long,device=self.device),labels[i,end_index.item():]])
 
             assemb_embed_list.append(assem_embed)
             attention_assem.append(assem_attention_mask.to(self.device))

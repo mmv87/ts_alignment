@@ -102,98 +102,94 @@ class ts_multimodal_text(Dataset):
           'ts_inputs':ts_inputs} ## list of ts_data(tensors) of size (1,N_i,P)
 
 
-###collate function for the batch
 ## padding at the ts_input level and the input_ids,attention_mask,textual tokens)
-def collate_func(batch):
-  input_ids = [x['input_ids'] for x in batch]
-  output_ids=[x['output_ids'] for x in batch]
-  ts_data=[x['ts_inputs'][0] for x in batch] 
+def collate_func(batch,tokenizer=None,device=device):
+    input_ids = [x['input_ids'] for x in batch]
+    output_ids=[x['output_ids'] for x in batch]
+    ts_data=[x['ts_inputs'][0] for x in batch] 
   
-  ts_patches_len=[x['ts_inputs'][0].shape[1] for x in batch] # Accessing shape from the actual tensor for univariate case
+    ts_patches_len=[x['ts_inputs'][0].shape[1] for x in batch] # Accessing shape from the actual tensor for univariate case
   ## setting the max_patch_length for ts_tokens
-  max_n_per_batch=10
-  padded_ts_data=[]
-  labels_batch=[]
-  attention_mask_batch=[]
+    max_n_per_batch=10
+    padded_ts_data=[]
+    labels_batch=[]
+    attention_mask_batch=[]
 
   ##padding the times series input in the batch
-  for i,ts_input_sample in enumerate(ts_data):
-    padded_patch_len=max_n_per_batch-ts_input_sample.shape[1]
-    patch_len=ts_input_sample.shape[2]
-    ts_padding_len= padded_patch_len*patch_len
-    pattern = torch.tensor([0.0,1.0]).to(device)
-    num_repeats = ts_padding_len // 2
-    pad = pattern.repeat(num_repeats)
+    for i,ts_input_sample in enumerate(ts_data):
+        padded_patch_len=max_n_per_batch-ts_input_sample.shape[1]
+        patch_len=ts_input_sample.shape[2]
+        ts_padding_len= padded_patch_len*patch_len
+        pattern = torch.tensor([0.0,1.0]).to(device)
+        num_repeats = ts_padding_len // 2
+        pad = pattern.repeat(num_repeats)
 
     ##converting the ts_input = <ts_tokens>+<padded_ts_token>
-    padded_ts_token=pad.view(-1,patch_len).unsqueeze(0)
-    padded_ts_data.append(torch.cat([ts_input_sample.to(device),padded_ts_token.to(device)],dim=1)) ## the ts_tokens are right padded
-
+        padded_ts_token=pad.view(-1,patch_len).unsqueeze(0)
+        padded_ts_data.append(torch.cat([ts_input_sample.to(device),padded_ts_token.to(device)],dim=1)) ## the ts_tokens are right padded
 
   ## N_i of batch of samples after padding
-  ts_patch_padded_len=[x.shape[1] for x in padded_ts_data]
-  max_text_len=max([x.size(0) for x in input_ids])
-  max_ts_len=max(ts_patches_len)
-  ts_seq_len = [seq.size(0) for seq in input_ids]
-  ##print(ts_seq_len)
-  tot_len=[(x+y) for x,y in zip(ts_patch_padded_len,ts_seq_len)]
-  max_len_batch=max(tot_len)
+    ts_patch_padded_len=[x.shape[1] for x in padded_ts_data]
+    max_text_len=max([x.size(0) for x in input_ids])
+    max_ts_len=max(ts_patches_len)
+    ts_seq_len = [seq.size(0) for seq in input_ids]
+    ##print(ts_seq_len)
+    tot_len=[(x+y) for x,y in zip(ts_patch_padded_len,ts_seq_len)]
+    max_len_batch=max(tot_len)
 
-  
-  if len(batch)==1:
-    print(input_ids[0].shape)
-    input_ids_padded=input_ids[0].unsqueeze(0)    ##print(f'textual_shape {input_ids_padded.shape}')
-    print(input_ids_padded.shape)
+    if len(batch)==1:
+        print(input_ids[0].shape)
+        input_ids_padded=input_ids[0].unsqueeze(0)    ##print(f'textual_shape {input_ids_padded.shape}')
+        print(input_ids_padded.shape)
 
-    output_len=output_ids[0].shape[0]
-    output_start_index = input_ids[0].shape[0] - output_len
+        output_len=output_ids[0].shape[0]
+        output_start_index = input_ids[0].shape[0] - output_len
 
-    labels = torch.full((ts_seq_len[0],),-100,dtype=torch.long,device=device)
-    labels[-output_len:] = output_ids[0]
-    labels_batch.append(labels)
-    ##print(labels.shape)
-    attention_mask=torch.cat([torch.ones(ts_data[0].shape[1],dtype=torch.long,device=device),torch.ones(ts_seq_len[0],dtype=torch.long,device=device)])
-    attention_mask_batch.append(attention_mask)
-    ##print(attention_mask.shape)
+        labels = torch.full((ts_seq_len[0],),-100,dtype=torch.long,device=device)
+        labels[-output_len:] = output_ids[0]
+        labels_batch.append(labels)
+        ##print(labels.shape)
+        attention_mask=torch.cat([torch.ones(ts_data[0].shape[1],dtype=torch.long,device=device),torch.ones(ts_seq_len[0],dtype=torch.long,device=device)])
+        attention_mask_batch.append(attention_mask)
+        ##print(attention_mask.shape)
 
-    return {
-        'input_ids':input_ids_padded,
-        "labels":torch.stack(labels_batch),
-        'attention_mask':torch.stack(attention_mask_batch),
-        "time_series":padded_ts_data[0]} ##list of tensor (bs,max_N,Patch_len)}
+        return {
+            'input_ids':input_ids_padded,
+            "labels":torch.stack(labels_batch),
+            'attention_mask':torch.stack(attention_mask_batch),
+            "time_series":padded_ts_data[0]} ##list of tensor (bs,max_N,Patch_len)}
 
 
-  else:
-    input_ids_padded= torch.stack([torch.cat([torch.full(((max_len_batch-seq.size(0)),),tokenizer.pad_token_id,dtype=seq.dtype),seq]) for seq in input_ids])
+    else:
+        input_ids_padded= torch.stack([torch.cat([torch.full(((max_len_batch-seq.size(0)),),tokenizer.pad_token_id,dtype=seq.dtype),seq]) for seq in input_ids])
 
   ##max_len_batch=input_ids_padded.shape[1] # Correctepl=d to use shape[1] for sequence length
   ###max_N_per_batch=max(ts_data[])
   
+    for i,sample in enumerate(batch):
+        labels = torch.full((max_len_batch,),-100,dtype=torch.long,device=device)
+        combined_len = sample['input_ids'].shape[0] + sample['ts_inputs'][0].shape[1] # Assuming one ts input per sample for simplicity
+        pad_len = max_len_batch - combined_len
 
-  for i,sample in enumerate(batch):
-    labels = torch.full((max_len_batch,),-100,dtype=torch.long,device=device)
-    combined_len = sample['input_ids'].shape[0] + sample['ts_inputs'][0].shape[1] # Assuming one ts input per sample for simplicity
-    pad_len = max_len_batch - combined_len
+        seq_len=sample['input_ids'].shape[0]
+        output_len=sample['output_ids'].shape[0]
 
-    seq_len=sample['input_ids'].shape[0]
-    output_len=sample['output_ids'].shape[0]
+        # Adjust label assignment based on padding at the beginning and TS embeddings
+        # The labels correspond to the output_ids, which are at the end of the combined sequence
+        # Calculate the starting index for output_ids in the padded label tensor
+        output_start_index = max_len_batch - output_len
+        labels[-output_len:] = sample['output_ids']
+        labels_batch.append(labels)
 
-    # Adjust label assignment based on padding at the beginning and TS embeddings
-    # The labels correspond to the output_ids, which are at the end of the combined sequence
-    # Calculate the starting index for output_ids in the padded label tensor
-    output_start_index = max_len_batch - output_len
-    labels[-output_len:] = sample['output_ids']
-    labels_batch.append(labels)
-
-    # Adjust attention mask based on padding and TS embeddings
-    attention_mask=torch.cat([torch.zeros(pad_len,dtype=torch.long,device=device),torch.ones(sample['ts_inputs'][0].shape[1],dtype=torch.long,device=device),
-                              torch.ones(seq_len,dtype=torch.long,device=device)
-                                ]) # Assuming one ts input
-    attention_mask_batch.append(attention_mask)
+        # Adjust attention mask based on padding and TS embeddings
+        attention_mask=torch.cat([torch.zeros(pad_len,dtype=torch.long,device=device),torch.ones(sample['ts_inputs'][0].shape[1],dtype=torch.long,device=device),
+                                torch.ones(seq_len,dtype=torch.long,device=device)
+                                    ]) # Assuming one ts input
+        attention_mask_batch.append(attention_mask)
 
   ##return the batch of input_ids , labels and timeseries
-  return{
-      'input_ids':input_ids_padded,
-      "labels":torch.stack(labels_batch),
-      'attention_mask':torch.stack(attention_mask_batch),
-      "time_series":torch.cat(padded_ts_data,dim=0)} ##list of tensor (bs,max_N,Patch_len)
+    return{
+        'input_ids':input_ids_padded,
+        "labels":torch.stack(labels_batch),
+        'attention_mask':torch.stack(attention_mask_batch),
+        "time_series":torch.cat(padded_ts_data,dim=0)} ##list of tensor (bs,max_N,Patch_len)
