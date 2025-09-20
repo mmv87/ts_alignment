@@ -175,6 +175,7 @@ for epoch in range(10):  ##10 epochs
 
 torch.save(model_wrapper.state_dict(), os.path.join(os.environ["SLURM_TMPDIR"], "ts_llm_model.pth"))
 tokenizer.save_pretrained(os.path.join(os.environ["SLURM_TMPDIR"], "llm_tokenizer"))
+
 ### save the plot
 out_path = os.path.join(os.environ["SLURM_TMPDIR"], "training_loss.png")
 import matplotlib.pyplot as plt
