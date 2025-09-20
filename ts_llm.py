@@ -366,7 +366,7 @@ for p in model_wrapper.ts_encoder.parameters():
 """for param in ts_encoder.parameters():
     param.requires_grad=True"""
 
-for epoch in range(10):
+for epoch in range(5):
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
     num_batches = 0
     running_loss=0
@@ -410,7 +410,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 plt.figure(figsize=(8, 5))
-plt.plot(range(0, 10), epoch_losses, marker='o')
+plt.plot(range(0, 5), epoch_losses, marker='o')
 plt.title("Training Loss Trend Over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
