@@ -103,7 +103,6 @@ class ts_multimodal_text(Dataset):
           'output_ids':output_ids,
           'ts_inputs':ts_inputs} ## list of ts_data(tensors) of size (1,N_i,P)
 
-
 ## padding at the ts_input level and the input_ids,attention_mask,textual tokens)
 def collate_func(batch,tokenizer=None,device=device):
     input_ids = [x['input_ids'] for x in batch]
@@ -140,9 +139,7 @@ def collate_func(batch,tokenizer=None,device=device):
     max_len_batch=max(tot_len)
 
     if len(batch)==1:
-        print(input_ids[0].shape)
         input_ids_padded=input_ids[0].unsqueeze(0)    ##print(f'textual_shape {input_ids_padded.shape}')
-        print(input_ids_padded.shape)
 
         output_len=output_ids[0].shape[0]
         output_start_index = input_ids[0].shape[0] - output_len
