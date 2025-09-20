@@ -40,7 +40,7 @@ def dataset_align(file):
     list_data=[]
     with open(file,'r',encoding='utf-8') as file:
         for idx,line in enumerate(file):
-            if idx<5500:
+            if idx<2500:
                 obj= json.loads(line)
                 list_data.append(obj)
             else:
@@ -142,7 +142,7 @@ for p in model_wrapper.ts_encoder.parameters():
   p.requires_grad=True
 
 
-for epoch in range(3):
+for epoch in range(10):  ##10 epochs
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
     num_batches = 0
     running_loss=0
@@ -173,6 +173,8 @@ for epoch in range(3):
     epoch_loss=running_loss/num_batches
     epoch_losses.append(epoch_loss)
 
+torch.save(model_wrapper.state_dict(), os.path.join(os.environ["SLURM_TMPDIR"], "ts_llm_model.pth"))
+tokenizer.save_pretrained(os.path.join(os.environ["SLURM_TMPDIR"], "llm_tokenizer"))
 ### save the plot
 out_path = os.path.join(os.environ["SLURM_TMPDIR"], "training_loss.png")
 import matplotlib.pyplot as plt
@@ -180,7 +182,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 plt.figure(figsize=(8, 5))
-plt.plot(range(0, 3), epoch_losses, marker='o')
+plt.plot(range(0, 10), epoch_losses, marker='o')
 plt.title("Training Loss Trend Over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
