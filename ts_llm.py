@@ -40,7 +40,7 @@ def dataset_align(file):
     list_data=[]
     with open(file,'r',encoding='utf-8') as file:
         for idx,line in enumerate(file):
-            if idx<5500:
+            if idx<3000:
                 obj= json.loads(line)
                 list_data.append(obj)
             else:
@@ -142,7 +142,7 @@ for p in model_wrapper.ts_encoder.parameters():
   p.requires_grad=True
 
 
-for epoch in range(10):  ##10 epochs
+for epoch in range(5):  ##5 epochs
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
     num_batches = 0
     running_loss=0
@@ -183,7 +183,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 plt.figure(figsize=(8, 5))
-plt.plot(range(0, 10), epoch_losses, marker='o')
+plt.plot(range(0, 5), epoch_losses, marker='o')
 plt.title("Training Loss Trend Over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
